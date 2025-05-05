@@ -1,33 +1,46 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import cors from "cors"; 
+import cors from "cors";
 
 const app = express();
-
 const server = http.createServer(app);
 
-// Use a Set origin list or a single origin string
+// ✅ Allowed origins for CORS
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://frontend-chatapp-op3p.onrender.com",
+];
+
+// ✅ Enable CORS for REST API routes
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true, // required for cookies to work across domains
+  })
+);
+
+// ✅ Enable JSON parsing if needed (optional but common)
+app.use(express.json());
+
+// ✅ Initialize socket.io server with proper CORS
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000" , "https://frontend-chatapp-op3p.onrender.com"], // frontend origin
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-app.use(cors({
-  origin: origin,
-  credentials: true, // Allow cookies
-}));
-
-// Use Map for cleaner, safer socket tracking
+// ✅ Use Map for user socket tracking
 const userSocketMap = new Map(); // userId => socketId
 
+// ✅ Helper to get receiver's socket
 export const getReceiverSocketId = (receiverId) => {
   return userSocketMap.get(receiverId);
 };
 
+// ✅ Socket.io connection
 io.on("connection", (socket) => {
   console.log("✅ A user connected:", socket.id);
 
@@ -37,10 +50,8 @@ io.on("connection", (socket) => {
     userSocketMap.set(userId, socket.id);
     console.log(`🔐 User ID ${userId} associated with socket ${socket.id}`);
 
-    // Send online users to everyone
     io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 
-    // On disconnect
     socket.on("disconnect", () => {
       console.log("❌ User disconnected:", socket.id);
       userSocketMap.delete(userId);
