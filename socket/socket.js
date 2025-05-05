@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Use a Set origin list or a single origin string
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000"], // frontend origin
+    origin: ["http://localhost:3000" , "https://frontend-chatapp-op3p.onrender.com"], // frontend origin
     methods: ["GET", "POST"],
   },
 });
