@@ -1,6 +1,9 @@
 import path from "path";
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+
 import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.routes.js";
@@ -15,7 +18,7 @@ import compression from "compression";
 // gzip compression to reduce memory use
 app.use(compression());
 
-dotenv.config();
+
 
 const __dirname = path.resolve();
 // PORT should be assigned after calling dotenv.config() because we need to access the env variables. Didn't realize while recording the video. Sorry for the confusion.
@@ -45,7 +48,8 @@ setInterval(() => {
 	});
   }, 10000); // every 10 sec
   
-  	
+  console.log("✅ Loaded URI:", process.env.MONGO_DB_URI);
+
 server.listen(5000, () => {
 	connectToMongoDB();
 	console.log("Server Running on port 5000");
