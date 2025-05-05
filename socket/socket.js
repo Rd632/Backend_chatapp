@@ -14,6 +14,11 @@ const io = new Server(server, {
   },
 });
 
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true, // Allow cookies
+}));
+
 // Use Map for cleaner, safer socket tracking
 const userSocketMap = new Map(); // userId => socketId
 
