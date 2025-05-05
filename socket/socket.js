@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import cors from "cors"; 
 
 const app = express();
 
@@ -11,11 +12,12 @@ const io = new Server(server, {
   cors: {
     origin: ["http://localhost:3000" , "https://frontend-chatapp-op3p.onrender.com"], // frontend origin
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: origin,
   credentials: true, // Allow cookies
 }));
 
