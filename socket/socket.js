@@ -40,7 +40,7 @@ export const getReceiverSocketId = (receiverId) => {
   return userSocketMap.get(receiverId);
 };
 
-// ✅ Socket.io connection
+// ✅ Handle socket connections
 io.on("connection", (socket) => {
   console.log("✅ A user connected:", socket.id);
 
@@ -50,8 +50,27 @@ io.on("connection", (socket) => {
     userSocketMap.set(userId, socket.id);
     console.log(`🔐 User ID ${userId} associated with socket ${socket.id}`);
 
+    // Emit the updated online users list to all connected clients
     io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
 
+    // Listen for "sendMessage" event from clients
+    socket.on("sendMessage", async (newMessage) => {
+      try {
+        // Save the message to your database
+        const savedMessage = await saveMessageToDB(newMessage); // Replace with your actual DB logic
+
+        // Emit the new message to the receiver
+        const receiverSocketId = getReceiverSocketId(newMessage.receiverId);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessage", savedMessage);
+          console.log(`Message sent to receiver: ${newMessage.receiverId}`);
+        }
+      } catch (error) {
+        console.error("Error while sending message:", error);
+      }
+    });
+
+    // Handle disconnections
     socket.on("disconnect", () => {
       console.log("❌ User disconnected:", socket.id);
       userSocketMap.delete(userId);
@@ -60,6 +79,26 @@ io.on("connection", (socket) => {
   } else {
     console.warn("⚠️ Invalid userId in socket connection. Connection skipped.");
   }
+});
+
+// Helper function to save the message to the database (example)
+const saveMessageToDB = async (message) => {
+  // Replace with your actual database logic to save the message
+  const savedMessage = {
+    conversationId: message.conversationId,
+    senderId: message.senderId,
+    receiverId: message.receiverId,
+    message: message.message,
+    createdAt: new Date(),
+  };
+  // Simulate saving to DB and returning the saved message
+  return savedMessage; // In a real app, save to DB and return the saved message
+};
+
+// Server setup
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 export { app, io, server };
