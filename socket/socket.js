@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 import cors from "cors";
+import Message from "../models/message.model";
 
 const app = express();
 const server = http.createServer(app);
@@ -61,7 +62,7 @@ io.on("connection", (socket) => {
 
         // Emit the new message to the receiver
         const receiverSocketId = getReceiverSocketId(newMessage.receiverId);
-        if (receiverSocketId) {
+        if (receiverSocketId && receiverSocketId !== socket.id) {
           io.to(receiverSocketId).emit("newMessage", savedMessage);
           console.log(`Message sent to receiver: ${newMessage.receiverId}`);
         }
@@ -83,14 +84,12 @@ io.on("connection", (socket) => {
 
 // Helper function to save the message to the database (example)
 const saveMessageToDB = async (message) => {
-  // Replace with your actual database logic to save the message
-  const savedMessage = {
+  const savedMessage = await Message.create({
     conversationId: message.conversationId,
     senderId: message.senderId,
     receiverId: message.receiverId,
     message: message.message,
-    createdAt: new Date(),
-  };
+  });
   // Simulate saving to DB and returning the saved message
   return savedMessage; // In a real app, save to DB and return the saved message
 };
